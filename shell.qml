@@ -7,13 +7,16 @@
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import "modules/bar"
-import "modules/app-launcher"
-import "modules/notifications"
-import "modules/theme-switcher"
-import "modules/wallpaper"
-import "modules/osd"
-import "modules/monitor-manager"
+
+import qs.base
+import qs.modules.bar
+import qs.modules.applauncher
+import qs.modules.notifications
+import qs.modules.theme
+import qs.modules.wallpaper
+import qs.modules.media
+import qs.modules.osd
+
 
 Scope {
   ThemeSwitcher { id: ts }
@@ -21,6 +24,6 @@ Scope {
   AppLauncher { theme: ts.theme }
   NotificationPopup { theme: ts.theme }
   WallpaperManager { theme: ts.theme }
+  MediaControl { theme: ts.theme }
   OSD { theme: ts.theme }
-  MonitorManager { theme: ts.theme }
 }

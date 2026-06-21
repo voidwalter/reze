@@ -10,7 +10,7 @@
     "textPrimary": "#c0caf5",
     "textSecondary": "#a9b1d6",
     "textMuted": "#565f89",
-    "accentPrimary": "#7aa2f7",
+    "accentPrimary": "#7af2f7",
     "accentCyan": "#7dcfff",
     "accentGreen": "#9ece6a",
     "accentOrange": "#ff9e64",
@@ -875,13 +875,13 @@
     "bgSelected": "#323232",
     "bgBorder": "#1a1a1a",
     "textPrimary": "#eeeeee",
-    "textSecondary": "#444444",
+    "textSecondary": "#666666",
     "textMuted": "#303030",
     "accentPrimary": "#eeeeee",
     "accentCyan": "#e9f3f0",
     "accentGreen": "#e9f3ec",
     "accentOrange": "#f3eee9",
-    "accentRed": "#da3333"
+    "accentRed": "#db3333"
   },
   {
     "name": "Dark Magic Girl",

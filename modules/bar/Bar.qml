@@ -7,10 +7,10 @@ import Quickshell.Services.SystemTray
 import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
+
 Scope {
   id: root
   property var theme: DefaultTheme {}
-  property string font: "Hack Nerd Font"
   property bool barVisible: true
 
   // MPRIS active player
@@ -80,11 +80,16 @@ Scope {
 
   Variants {
     model: Quickshell.screens
-
     PanelWindow {
       required property var modelData
       screen: modelData
       visible: root.barVisible
+      margins.top: 5
+      margins.bottom: -1
+      margins.left: 200
+      margins.right: 200
+      implicitHeight: 28
+      color: "transparent"
 
       anchors {
         top: true
@@ -92,132 +97,150 @@ Scope {
         right: true
       }
 
-      implicitHeight: 32
-      color: root.theme.bgBase
+      Rectangle {
+        id: barBackground
+        anchors.fill: parent
+        color: root.theme.bgBase
+		topLeftRadius: 20
+        topRightRadius: 20
+        bottomLeftRadius: 20
+        bottomRightRadius: 20
+
+      }
+
+      property string fontFamily: "CodeNewRoman Nerd Font"
+      property string fontMonoFamily: "CaskadiaCove Nerd Font"
+      property int fontSize: 14
+      property int fontMonoSize: 14
 
       Item {
         anchors.fill: parent
-        anchors.leftMargin: 10
-        anchors.rightMargin: 10
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
 
-        // Left section: Time + Workspaces + Now Playing
+        // ==================== LEFT SECTION ====================
         Row {
           id: leftSection
           anchors.left: parent.left
           anchors.verticalCenter: parent.verticalCenter
+          spacing: 15
+
+          // Launcher
+          Rectangle {
+            width: 15
+            height: 34
+            color: launcherMouse.containsMouse ? root.theme.bgBase : root.theme.bgBase
+            border.width: 2
+            border.color: root.theme.bgBase
+
+            MouseArea {
+              id: launcherMouse
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: Hyprland.dispatch("exec qs -c reze ipc call launcher toggle")
+            }
+
+            Text {
+              text: " "
+              anchors.centerIn: parent
+              color: root.theme.textPrimary
+			  font.family: "CaskadiaCove Nerd Font"
+			  font.pixelSize: 15
+            }
+          }
+
+          Text {
+            text: Hyprland.activeToplevel ? Hyprland.activeToplevel.title : ""
+            color: root.theme.textPrimary
+            font.pixelSize: 13
+            font.family: "Firacode Nerd Font"
+            elide: Text.ElideRight
+            width: Math.min(implicitWidth, 300)
+            anchors.verticalCenter: parent.verticalCenter
+          }
+
+          // Random status text
+          Rectangle {
+            width: 150
+            height: 35
+            color: root.theme.bgBase
+            Text {
+              id: statusLabel
+              text: getRandomText()
+              color: root.theme.accentOrange
+              anchors.verticalCenter: parent.verticalCenter
+              font.family: "DaddyTimeMono Nerd Font"
+              font.pixelSize: 11          
+            }
+
+            MouseArea {
+              id: statusLabelm
+              anchors.fill: parent
+              hoverEnabled: true
+              cursorShape: Qt.PointingHandCursor
+              onClicked: Hyprland.dispatch("exec qs -c shell ipc call launcher toggle")
+            }
+
+            Timer {
+              interval: 30000
+              running: true
+              repeat: true
+              onTriggered: statusLabel.text = getRandomText()
+            }
+          }
+        }
+
+        // ==================== CENTER SECTION - Workspaces ====================
+        Row {
+          anchors.centerIn: parent
+          spacing: 4
+
+          Repeater {
+            model: Hyprland.workspaces
+            Rectangle {
+              id: wsPill
+              required property var modelData
+              property bool urgentBlink: false
+
+              width: modelData.focused ? 32 : 24
+              height: 24
+              radius: 12
+              color: modelData.focused ? root.theme.bgBase :
+                     modelData.urgent && urgentBlink ? root.theme.accentRed : root.theme.bgBase
+
+              Text {
+                anchors.centerIn: parent
+                text: toRoman(modelData.id)
+                color: wsPill.modelData.focused ? root.theme.accentPrimary : root.theme.textPrimary
+                font.pixelSize: 13
+                font.family: "CaskadiaCove Nerd Font"
+                font.bold: wsPill.modelData.focused
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: wsPill.modelData.activate()
+              }
+            }
+          }
+        }
+
+        // ==================== RIGHT SECTION ====================
+        Row {
+          id: rightSection
+          anchors.right: parent.right
+          anchors.verticalCenter: parent.verticalCenter
           spacing: 8
 
-          // Time
+          // Now Playing (media) - moved to right as requested
           Rectangle {
             height: 24
-            width: timeDate.width + 16
-            radius: 12
-            color: root.theme.bgSurface
-
-            Row {
-              id: timeDate
-              anchors.centerIn: parent
-              spacing: 8
-
-              Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: ""
-                color: root.theme.accentPrimary
-                font.pixelSize: 14
-                font.family: root.font
-              }
-
-              Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: Time.timeString
-                color: root.theme.textPrimary
-                font.pixelSize: 12
-                font.family: root.font
-              }
-
-              Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: Time.dateString
-                color: root.theme.textSecondary
-                font.pixelSize: 12
-                font.family: root.font
-              }
-            }
-          }
-
-          // Workspaces
-          Row {
-            spacing: 4
-
-            Repeater {
-              model: Hyprland.workspaces
-
-              Rectangle {
-                id: wsPill
-                required property var modelData
-                property bool urgentBlink: false
-
-                Accessible.role: Accessible.Button
-                Accessible.name: "Workspace " + modelData.id + (modelData.focused ? ", active" : "") + (modelData.urgent ? ", urgent" : "")
-
-                width: modelData.focused ? 32 : 24
-                height: 24
-                radius: 12
-                color: modelData.focused ? root.theme.accentPrimary :
-                       modelData.urgent && urgentBlink ? root.theme.accentRed : root.theme.bgSurface
-
-                Behavior on color {
-                  ColorAnimation { duration: 150 }
-                }
-
-                SequentialAnimation {
-                  loops: Animation.Infinite
-                  running: wsPill.modelData.urgent && !wsPill.modelData.focused
-
-                  PropertyAction { target: wsPill; property: "urgentBlink"; value: true }
-                  PauseAnimation { duration: 500 }
-                  PropertyAction { target: wsPill; property: "urgentBlink"; value: false }
-                  PauseAnimation { duration: 500 }
-
-                  onStopped: wsPill.urgentBlink = false
-                }
-
-                Text {
-                  anchors.centerIn: parent
-                  text: wsPill.modelData.id
-                  color: wsPill.modelData.focused ? root.theme.bgBase : root.theme.textPrimary
-                  font.pixelSize: 11
-                  font.family: root.font
-                  font.bold: wsPill.modelData.focused
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  onClicked: wsPill.modelData.activate()
-                }
-
-                Behavior on width {
-                  NumberAnimation { duration: 150 }
-                }
-              }
-            }
-          }
-
-          // Now Playing
-          Rectangle {
-            height: 24
-            width: nowPlayingContent.width + 16
             radius: 12
             color: root.theme.bgSurface
             visible: root.activePlayer !== null
-
-            Accessible.role: Accessible.Button
-            Accessible.name: {
-              if (!root.activePlayer) return "No media";
-              const artist = root.activePlayer.trackArtist || "";
-              const title = root.activePlayer.trackTitle || "";
-              return "Now playing: " + (artist ? artist + " - " : "") + title;
-            }
 
             Row {
               id: nowPlayingContent
@@ -231,7 +254,7 @@ Scope {
                 text: root.activePlayer && root.activePlayer.isPlaying ? "󰐊" : "󰏤"
                 color: root.theme.accentPrimary
                 font.pixelSize: 14
-                font.family: root.font
+                font.family: "Hack Nerd Font"
               }
 
               Text {
@@ -244,7 +267,7 @@ Scope {
                 }
                 color: root.theme.textPrimary
                 font.pixelSize: 11
-                font.family: root.font
+                font.family: "Hack Nerd Font"
                 elide: Text.ElideRight
                 width: Math.min(implicitWidth, 200)
               }
@@ -256,33 +279,6 @@ Scope {
               onClicked: root.activePlayer.togglePlaying()
             }
           }
-        }
-
-        // Center section: Window Title (truly centered in bar)
-        Item {
-          anchors.centerIn: parent
-          height: parent.height
-          width: Math.max(0, parent.width - 2 * Math.max(leftSection.width, rightSection.width) - 32)
-
-          Text {
-            Accessible.role: Accessible.StaticText
-            Accessible.name: "Active window: " + text
-            text: Hyprland.activeToplevel ? Hyprland.activeToplevel.title : ""
-            color: root.theme.textPrimary
-            font.pixelSize: 13
-            font.family: root.font
-            elide: Text.ElideRight
-            width: Math.min(implicitWidth, parent.width)
-            anchors.centerIn: parent
-          }
-        }
-
-        // Right section: System Info + System Tray
-        Row {
-          id: rightSection
-          anchors.right: parent.right
-          anchors.verticalCenter: parent.verticalCenter
-          spacing: 8
 
           // Volume
           Rectangle {
@@ -291,19 +287,10 @@ Scope {
             radius: 12
             color: root.theme.bgSurface
 
-            Accessible.role: Accessible.StaticText
-            Accessible.name: {
-              const sink = Pipewire.defaultAudioSink;
-              if (!sink || !sink.audio) return "Volume";
-              if (sink.audio.muted) return "Volume: muted";
-              return "Volume: " + Math.round(sink.audio.volume * 100) + "%";
-            }
-
             Row {
               id: volContent
               anchors.centerIn: parent
               spacing: 6
-
               Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: {
@@ -319,9 +306,8 @@ Scope {
                   return root.theme.accentPrimary;
                 }
                 font.pixelSize: 14
-                font.family: root.font
+                font.family: "Hack Nerd Font"
               }
-
               Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: {
@@ -332,7 +318,7 @@ Scope {
                 }
                 color: root.theme.textPrimary
                 font.pixelSize: 11
-                font.family: root.font
+                font.family: "Hack Nerd Font"
               }
             }
 
@@ -361,28 +347,23 @@ Scope {
             color: root.theme.bgSurface
             visible: brightnessFile.path !== ""
 
-            Accessible.role: Accessible.StaticText
-            Accessible.name: "Brightness: " + Math.round(root.brightnessValue * 100) + "%"
-
             Row {
               id: brightContent
               anchors.centerIn: parent
               spacing: 6
-
               Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "󰃠"
                 color: root.theme.accentOrange
                 font.pixelSize: 14
-                font.family: root.font
+                font.family: "Hack Nerd Font"
               }
-
               Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: Math.round(root.brightnessValue * 100) + "%"
                 color: root.theme.textPrimary
                 font.pixelSize: 11
-                font.family: root.font
+                font.family: "Hack Nerd Font"
               }
             }
 
@@ -401,14 +382,6 @@ Scope {
           // System Info
           Row {
             id: sysInfo
-
-            readonly property color batteryColor: {
-              if (SystemInfo.batteryCharging) return root.theme.accentGreen;
-              if (SystemInfo.batteryLevelRaw > 20) return root.theme.batteryGood;
-              if (SystemInfo.batteryLevelRaw > 10) return root.theme.batteryWarning;
-              return root.theme.batteryCritical;
-            }
-
             spacing: 4
 
             // CPU
@@ -417,137 +390,62 @@ Scope {
               width: cpuContent.width + 12
               radius: 12
               color: root.theme.bgSurface
-              Accessible.role: Accessible.StaticText
-              Accessible.name: "CPU: " + SystemInfo.cpuUsage
 
               Row {
                 id: cpuContent
                 anchors.centerIn: parent
                 spacing: 6
-
                 Text {
                   anchors.verticalCenter: parent.verticalCenter
-                  text: "󰻠"
+                  text: " "
                   color: root.theme.accentOrange
                   font.pixelSize: 14
-                  font.family: root.font
+                  font.family: "Hack Nerd Font"
                 }
                 Text {
                   anchors.verticalCenter: parent.verticalCenter
                   text: SystemInfo.cpuUsage
                   color: root.theme.textPrimary
                   font.pixelSize: 11
-                  font.family: root.font
+                  font.family: "Hack Nerd Font"
                 }
               }
             }
 
-            // Network
-            Rectangle {
-              height: 24
-              width: netContent.width + 12
-              radius: 12
-              color: root.theme.bgSurface
-              Accessible.role: Accessible.StaticText
-              Accessible.name: {
-                if (SystemInfo.networkType === "ethernet") return "Network: Ethernet"
-                if (SystemInfo.networkType === "wifi") return "Network: WiFi " + SystemInfo.networkInfo
-                return "Network: Disconnected"
-              }
-
-              Row {
-                id: netContent
-                anchors.centerIn: parent
-                spacing: 6
-
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: {
-                    if (SystemInfo.networkType === "ethernet") return "󰈀"
-                    if (SystemInfo.networkType === "wifi") return "󰖩"
-                    return "󰖪"
-                  }
-                  color: SystemInfo.networkType === "disconnected" ? root.theme.textMuted : root.theme.accentGreen
-                  font.pixelSize: 14
-                  font.family: root.font
-                }
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: SystemInfo.networkInfo
-                  color: root.theme.textPrimary
-                  font.pixelSize: 11
-                  font.family: root.font
-                }
-              }
-            }
-
-            // Battery
-            Rectangle {
-              height: 24
-              width: battContent.width + 12
-              radius: 12
-              color: root.theme.bgSurface
-              Accessible.role: Accessible.StaticText
-              Accessible.name: "Battery: " + SystemInfo.batteryLevel
-
-              Row {
-                id: battContent
-                anchors.centerIn: parent
-                spacing: 6
-
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: SystemInfo.batteryIcon
-                  color: sysInfo.batteryColor
-                  font.pixelSize: 14
-                  font.family: root.font
-                }
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: SystemInfo.batteryLevel
-                  color: root.theme.textPrimary
-                  font.pixelSize: 11
-                  font.family: root.font
-                }
-              }
-            }
-
-            // Temperature
-            Rectangle {
-              height: 24
-              width: tempContent.width + 12
-              radius: 12
-              color: root.theme.bgSurface
-              Accessible.role: Accessible.StaticText
-              Accessible.name: "Temperature: " + SystemInfo.temperature
-
-              Row {
-                id: tempContent
-                anchors.centerIn: parent
-                spacing: 6
-
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: "󰔏"
-                  color: root.theme.accentRed
-                  font.pixelSize: 14
-                  font.family: root.font
-                }
-                Text {
-                  anchors.verticalCenter: parent.verticalCenter
-                  text: SystemInfo.temperature
-                  color: root.theme.textPrimary
-                  font.pixelSize: 11
-                  font.family: root.font
-                }
-              }
-            }
+            // // Network
+            // Rectangle {
+            //   height: 24
+            //   width: netContent.width + 12
+            //   radius: 12
+            //   color: root.theme.bgSurface
+            //
+            //   Row {
+            //     id: netContent
+            //     anchors.centerIn: parent
+            //     spacing: 6
+            //     Text {
+            //       anchors.verticalCenter: parent.verticalCenter
+            //       text: {
+            //         if (SystemInfo.networkType === "ethernet") return "󰈀"
+            //         if (SystemInfo.networkType === "wifi") return "󰖩"
+            //         return "󰖪"
+            //       }
+            //       color: SystemInfo.networkType === "disconnected" ? root.theme.textMuted : root.theme.accentGreen
+            //       font.pixelSize: 14
+            //       font.family: "Hack Nerd Font"
+            //     }
+            //     Text {
+            //       anchors.verticalCenter: parent.verticalCenter
+            //       text: SystemInfo.networkInfo
+            //       color: root.theme.textPrimary
+            //       font.pixelSize: 11
+            //       font.family: "Hack Nerd Font"
+            //     }
+            //   }
+            // }
           }
 
           // System Tray
-          // There's an issue that some tray not display correctly.
-          // https://github.com/quickshell-mirror/quickshell/issues/26
-          // https://github.com/quickshell-mirror/quickshell/pull/777
           Rectangle {
             implicitHeight: 24
             implicitWidth: trayIcons.implicitWidth + 4
@@ -561,17 +459,11 @@ Scope {
 
               Repeater {
                 model: SystemTray.items
-
                 MouseArea {
                   id: trayDelegate
                   required property SystemTrayItem modelData
-
-                  Accessible.role: Accessible.Button
-                  Accessible.name: modelData.tooltipTitle || modelData.title || "System tray item"
-
                   Layout.preferredWidth: 24
                   Layout.preferredHeight: 24
-
                   acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
                   onClicked: (mouse) => {
@@ -595,7 +487,6 @@ Scope {
                   QsMenuAnchor {
                     id: menuAnchor
                     menu: trayDelegate.modelData.menu
-
                     anchor.window: trayDelegate.QsWindow.window
                     anchor.adjustment: PopupAdjustment.Flip
                     anchor.onAnchoring: {
@@ -610,9 +501,64 @@ Scope {
               }
             }
           }
-        }
-      }
 
+          // Time
+          Rectangle {
+            height: 22
+            width: timeDate.width + 16
+            radius: 12
+            color: root.theme.bgBase
+
+            Row {
+              id: timeDate
+              anchors.centerIn: parent
+              spacing: 8
+
+              Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Time.dateString
+                color: root.theme.textSecondary
+                font.pixelSize: 12
+                font.family: "Hack Nerd Font"
+              }
+              Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Time.timeString
+                color: root.theme.textPrimary
+                font.pixelSize: 12
+                font.family: "Hack Nerd Font"
+              }
+            }
+          }
+        }      }
     }
+  }
+
+  function toRoman(num) {
+      const romanMap = [
+          { value: 50, numeral: "L" },
+          { value: 40, numeral: "XL" },
+          { value: 10, numeral: "X" },
+          { value: 9, numeral: "IX" },
+          { value: 5, numeral: "V" },
+          { value: 4, numeral: "IV" },
+          { value: 1, numeral: "I" }
+      ]
+    let roman = ""; let number = num;
+    for (let i = 0; i < romanMap.length; i++) {
+      while (number >= romanMap[i].value) { roman += romanMap[i].numeral; number -= romanMap[i].value; }
+    }
+    return roman;
+  }
+
+  readonly property var phrases: [
+      "It's not working, let me out!",
+      "error: 1 dependencyyyy failed",
+      "you know what? get out :!q",
+      "you don't deserve that",
+      "will you fix that?",
+  ]
+  function getRandomText() {
+    return phrases[Math.floor(Math.random() * phrases.length)]
   }
 }

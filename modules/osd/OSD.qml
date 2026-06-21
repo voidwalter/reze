@@ -8,7 +8,6 @@ import QtQuick.Layouts
 Scope {
   id: root
   property var theme: DefaultTheme {}
-  property string font: "Hack Nerd Font"
 
   property bool showVolume: false
   property bool showBrightness: false
@@ -155,7 +154,7 @@ Scope {
               text: root.volumeMuted ? "Mute" : Math.round(root.volumeValue * 100) + "%"
               color: root.theme.textSecondary
               font.pixelSize: 10
-              font.family: root.font
+              font.family: "Hack Nerd Font"
               Layout.alignment: Qt.AlignHCenter
             }
 
@@ -191,7 +190,7 @@ Scope {
               }
               color: root.volumeMuted ? root.theme.textMuted : root.theme.accentPrimary
               font.pixelSize: 15
-              font.family: root.font
+              font.family: "Hack Nerd Font"
               Layout.alignment: Qt.AlignHCenter
             }
           }
@@ -225,7 +224,7 @@ Scope {
               text: Math.round(root.brightnessValue * 100) + "%"
               color: root.theme.textSecondary
               font.pixelSize: 10
-              font.family: root.font
+              font.family: "Hack Nerd Font"
               Layout.alignment: Qt.AlignHCenter
             }
 
@@ -256,7 +255,7 @@ Scope {
               text: "󰃠"
               color: root.theme.accentOrange
               font.pixelSize: 15
-              font.family: root.font
+              font.family: "Hack Nerd Font"
               Layout.alignment: Qt.AlignHCenter
             }
           }

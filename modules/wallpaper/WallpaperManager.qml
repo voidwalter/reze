@@ -7,7 +7,6 @@ import QtQuick.Layouts
 Scope {
   id: root
   property var theme: DefaultTheme {}
-  property string font: "Hack Nerd Font"
 
   property string searchText: ""
   property string previewPath: ""
@@ -94,7 +93,7 @@ Scope {
             text: "󰸉  Wallpaper"
             color: root.theme.accentPrimary
             font.pixelSize: 14
-            font.family: root.font
+            font.family: "CodeNewRoman Nerd Font"
             font.bold: true
           }
 
@@ -104,7 +103,7 @@ Scope {
             text: root.filteredWallpapers.length + " images"
             color: root.theme.textMuted
             font.pixelSize: 11
-            font.family: root.font
+            font.family: "CodeNewRoman Nerd Font"
           }
 
           // Refresh button
@@ -121,7 +120,7 @@ Scope {
               text: "󰑐"
               color: root.theme.textMuted
               font.pixelSize: 14
-              font.family: root.font
+              font.family: "CodeNewRoman Nerd Font"
             }
 
             MouseArea {
@@ -153,7 +152,7 @@ Scope {
               text: ""
               color: root.theme.textMuted
               font.pixelSize: 13
-              font.family: root.font
+              font.family: "CodeNewRoman Nerd Font"
               Layout.alignment: Qt.AlignVCenter
             }
 
@@ -163,7 +162,7 @@ Scope {
               Layout.alignment: Qt.AlignVCenter
               color: root.theme.textPrimary
               font.pixelSize: 13
-              font.family: root.font
+              font.family: "CodeNewRoman Nerd Font"
               clip: true
               selectByMouse: true
               Accessible.role: Accessible.EditableText
@@ -180,10 +179,10 @@ Scope {
             }
 
             Text {
-              text: "Search wallpapers..."
+              text: "Search"
               color: root.theme.textMuted
-              font.pixelSize: 13
-              font.family: root.font
+              font.pixelSize: 10
+              font.family: "CodeNewRoman Nerd Font"
               visible: searchInput.text === "" && !searchInput.activeFocus
             }
           }
@@ -238,7 +237,7 @@ Scope {
                     text: "󰋩"
                     color: root.theme.textMuted
                     font.pixelSize: 24
-                    font.family: root.font
+                    font.family: "CodeNewRoman Nerd Font"
                   }
                 }
               }
@@ -254,9 +253,9 @@ Scope {
                 Text {
                   anchors.centerIn: parent
                   text: modelData.split("/").pop()
-                  color: "#ffffff"
-                  font.pixelSize: 9
-                  font.family: root.font
+                  color: "#ffffaf"
+                  font.pixelSize: 12
+                  font.family: "CodeNewRoman Nerd Font"
                   elide: Text.ElideMiddle
                   width: parent.width - 8
                   horizontalAlignment: Text.AlignHCenter
@@ -279,7 +278,7 @@ Scope {
                   text: ""
                   color: root.theme.bgBase
                   font.pixelSize: 12
-                  font.family: root.font
+                  font.family: "CodeNewRoman Nerd Font"
                 }
               }
 
@@ -303,10 +302,10 @@ Scope {
           // Empty state
           Text {
             anchors.centerIn: parent
-            text: "󰋩  No wallpapers found\nAdd images to ~/Pictures/Wallpapers/"
+            text: "󰋩  No wallpapers found"
             color: root.theme.textMuted
             font.pixelSize: 13
-            font.family: root.font
+            font.family: "CodeNewRoman Nerd Font"
             horizontalAlignment: Text.AlignHCenter
             visible: wallpaperGrid.count === 0
           }
@@ -321,23 +320,23 @@ Scope {
             spacing: 4
             Rectangle {
               width: hintClick.width + 8; height: 18; radius: 4; color: root.theme.bgSurface
-              Text { id: hintClick; anchors.centerIn: parent; text: "click"; color: root.theme.textMuted; font.pixelSize: 10; font.family: root.font }
+              Text { id: hintClick; anchors.centerIn: parent; text: "click"; color: root.theme.textMuted; font.pixelSize: 10; font.family: "CodeNewRoman Nerd Font" }
             }
-            Text { text: "apply"; color: root.theme.textMuted; font.pixelSize: 10; font.family: root.font; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: "apply"; color: root.theme.textMuted; font.pixelSize: 10; font.family: "CodeNewRoman Nerd Font"; anchors.verticalCenter: parent.verticalCenter }
           }
 
           Row {
             spacing: 4
             Rectangle {
               width: hintRight.width + 8; height: 18; radius: 4; color: root.theme.bgSurface
-              Text { id: hintRight; anchors.centerIn: parent; text: "right-click"; color: root.theme.textMuted; font.pixelSize: 10; font.family: root.font }
+              Text { id: hintRight; anchors.centerIn: parent; text: "right-click"; color: root.theme.textMuted; font.pixelSize: 10; font.family: "CodeNewRoman Nerd Font" }
             }
-            Text { text: "preview"; color: root.theme.textMuted; font.pixelSize: 10; font.family: root.font; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: "preview"; color: root.theme.textMuted; font.pixelSize: 10; font.family: "CodeNewRoman Nerd Font"; anchors.verticalCenter: parent.verticalCenter }
           }
 
           Row {
             spacing: 4
-            Text { text: "Backend: " + WallpaperService.backend; color: root.theme.textMuted; font.pixelSize: 10; font.family: root.font; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: "Backend: " + WallpaperService.backend; color: root.theme.textMuted; font.pixelSize: 10; font.family: "CodeNewRoman Nerd Font"; anchors.verticalCenter: parent.verticalCenter }
           }
 
           Item { Layout.fillWidth: true }
@@ -386,14 +385,14 @@ Scope {
             text: ""
             color: root.theme.bgBase
             font.pixelSize: 14
-            font.family: root.font
+            font.family: "CodeNewRoman Nerd Font"
             anchors.verticalCenter: parent.verticalCenter
           }
           Text {
             text: "Apply Wallpaper"
             color: root.theme.bgBase
             font.pixelSize: 13
-            font.family: root.font
+            font.family: "CodeNewRoman Nerd Font"
             font.bold: true
             anchors.verticalCenter: parent.verticalCenter
           }
